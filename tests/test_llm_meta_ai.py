@@ -41,6 +41,15 @@ def test_registers_models(mocked_models):
     assert model.api_base == "https://api.ai.meta.com/v1"
     assert model.supports_tools
     assert model.supports_schema
+    assert model.vision
+    assert model.attachment_types == {
+        "image/png",
+        "image/jpeg",
+        "image/webp",
+        "image/gif",
+        "image/x-icon",
+        "application/pdf",
+    }
     assert str(model) == "Meta AI: meta-ai/muse-spark"
 
 
@@ -50,6 +59,15 @@ def test_max_tokens_becomes_max_completion_tokens(mocked_models):
     kwargs = model.build_kwargs(prompt, stream=False)
     assert "max_tokens" not in kwargs
     assert kwargs["max_completion_tokens"] == 100
+
+
+def test_reasoning_effort_option(mocked_models):
+    model = llm.get_model("meta-ai/muse-spark")
+    prompt = llm.models.Prompt(
+        "hello", model=model, options=model.Options(reasoning_effort="low")
+    )
+    kwargs = model.build_kwargs(prompt, stream=False)
+    assert kwargs["reasoning_effort"] == "low"
 
 
 def test_registers_async_models(mocked_models):

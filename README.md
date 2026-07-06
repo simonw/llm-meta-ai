@@ -28,7 +28,7 @@ You can also set the key using the `META_AI_TOKEN` environment variable.
 Run `llm models` to get a full list of available models. Models are prefixed with `meta-ai/`, for example:
 
 ```bash
-llm -m meta-ai/muse-spark "What is the capital of France?"
+llm -m meta-ai/blue_hornbill_vip "What is the capital of France?"
 ```
 
 You can also list just the Meta AI models like this:
@@ -44,21 +44,41 @@ The list of models is fetched from the API and cached for an hour. Run this comm
 llm meta-ai refresh
 ```
 
-### Rate limits and max_tokens
+### Reasoning
 
-The Meta AI API counts requests against an output token rate limit *before* running them, using the maximum number of tokens the model could produce unless you provide a cap. To avoid exhausting your quota, consider setting a token limit on your prompts:
+These are reasoning models: they think before they answer, and the reasoning tokens count towards your output token budget - they are reported in the `completion_tokens_details.reasoning_tokens` key in `llm logs --json`. Control how much the model reasons with the `reasoning_effort` option, one of `none`, `minimal`, `low`, `medium`, `high` or `xhigh` (not every model supports every value):
 
 ```bash
-llm -m meta-ai/muse-spark 'A short poem about a pelican' -o max_tokens 2000
+llm -m meta-ai/blue_hornbill_vip 'What is the capital of France?' -o reasoning_effort low
 ```
-These are reasoning models, so leave generous room for reasoning tokens - the token counts they consume while thinking are reported in the `completion_tokens_details.reasoning_tokens` key in `llm logs --json`.
+
+### Rate limits and max_tokens
+
+Requests count against an output token rate limit *before* they run. Setting a token limit on your prompts helps avoid exhausting your quota - leave generous room for reasoning tokens:
+
+```bash
+llm -m meta-ai/blue_hornbill_vip 'A short poem about a pelican' -o max_tokens 2000
+```
+
+Rate limits are applied per model - a model that returns 429 errors even after a long wait may not be enabled for your team, even if it shows up in the models list.
+
+### Attachments
+
+Models accept images (PNG, JPEG, WebP, GIF, ICO) and PDFs:
+
+```bash
+llm -m meta-ai/blue_hornbill_vip 'Describe this image' \
+  -a https://static.simonwillison.net/static/2024/pelicans.jpg
+```
+
+The API also supports MP4 video via its Files API, which this plugin does not yet use.
 
 ### Tools
 
 Meta AI models support [tools](https://llm.datasette.io/en/stable/tools.html):
 
 ```bash
-llm -m meta-ai/muse-spark -T llm_time 'What time is it?' --td
+llm -m meta-ai/blue_hornbill_vip -T llm_time 'What time is it?' --td
 ```
 
 ### Schemas
@@ -66,7 +86,7 @@ llm -m meta-ai/muse-spark -T llm_time 'What time is it?' --td
 They support [schemas](https://llm.datasette.io/en/stable/schemas.html) as well:
 
 ```bash
-llm -m meta-ai/muse-spark 'Invent a dog' --schema 'name, age int, breed'
+llm -m meta-ai/blue_hornbill_vip 'Invent a dog' --schema 'name, age int, breed'
 ```
 
 ## Development

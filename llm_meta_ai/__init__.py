@@ -1,12 +1,24 @@
 import click
+from enum import Enum
 import httpx
 import json
 import llm
 from llm.default_plugins.openai_models import Chat, AsyncChat
 from pathlib import Path
+from pydantic import Field
+from typing import Optional
 import time
 
 API_BASE = "https://api.ai.meta.com/v1"
+
+
+class ReasoningEffortEnum(str, Enum):
+    none = "none"
+    minimal = "minimal"
+    low = "low"
+    medium = "medium"
+    high = "high"
+    xhigh = "xhigh"
 
 
 def get_meta_ai_models(key, skip_cache=False):
@@ -26,11 +38,20 @@ class _mixin:
     needs_key = "meta-ai"
     key_env_var = "META_AI_TOKEN"
 
+    class Options(Chat.Options):
+        reasoning_effort: Optional[ReasoningEffortEnum] = Field(
+            description=(
+                'How much reasoning the model performs before answering: one of '
+                '"none", "minimal", "low", "medium", "high" or "xhigh". '
+                'Set to "none" to disable reasoning.'
+            ),
+            default=None,
+        )
+
     def build_kwargs(self, prompt, stream):
         kwargs = super().build_kwargs(prompt, stream)
-        # The Meta AI API uses max_completion_tokens, not max_tokens -
-        # requests without it are counted against the output token rate
-        # limit as if they used the model maximum
+        # The API accepts max_tokens as an alias but its own rate limit
+        # errors recommend max_completion_tokens, so send that
         max_tokens = kwargs.pop("max_tokens", None)
         if max_tokens is not None:
             kwargs["max_completion_tokens"] = max_tokens
@@ -63,13 +84,15 @@ def register_models(register):
             model_id="meta-ai/{}".format(model_name),
             model_name=model_name,
             api_base=API_BASE,
+            vision=True,
             supports_tools=True,
             supports_schema=True,
         )
-        register(
-            MetaAIChat(**kwargs),
-            MetaAIAsyncChat(**kwargs),
-        )
+        chat_model = MetaAIChat(**kwargs)
+        async_chat_model = MetaAIAsyncChat(**kwargs)
+        for model in (chat_model, async_chat_model):
+            model.attachment_types.add("image/x-icon")
+        register(chat_model, async_chat_model)
 
 
 class DownloadError(Exception):
