@@ -44,6 +44,15 @@ The list of models is fetched from the API and cached for an hour. Run this comm
 llm meta-ai refresh
 ```
 
+### Rate limits and max_tokens
+
+The Meta AI API counts requests against an output token rate limit *before* running them, using the maximum number of tokens the model could produce unless you provide a cap. To avoid exhausting your quota, consider setting a token limit on your prompts:
+
+```bash
+llm -m meta-ai/muse-spark 'A short poem about a pelican' -o max_tokens 2000
+```
+These are reasoning models, so leave generous room for reasoning tokens - the token counts they consume while thinking are reported in the `completion_tokens_details.reasoning_tokens` key in `llm logs --json`.
+
 ### Tools
 
 Meta AI models support [tools](https://llm.datasette.io/en/stable/tools.html):

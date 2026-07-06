@@ -22,20 +22,30 @@ def get_model_ids(key, skip_cache=False):
     return [model["id"] for model in get_meta_ai_models(key, skip_cache=skip_cache)]
 
 
-class MetaAIChat(Chat):
+class _mixin:
     needs_key = "meta-ai"
     key_env_var = "META_AI_TOKEN"
+
+    def build_kwargs(self, prompt, stream):
+        kwargs = super().build_kwargs(prompt, stream)
+        # The Meta AI API uses max_completion_tokens, not max_tokens -
+        # requests without it are counted against the output token rate
+        # limit as if they used the model maximum
+        max_tokens = kwargs.pop("max_tokens", None)
+        if max_tokens is not None:
+            kwargs["max_completion_tokens"] = max_tokens
+        return kwargs
 
     def __str__(self):
         return "Meta AI: {}".format(self.model_id)
 
 
-class MetaAIAsyncChat(AsyncChat):
-    needs_key = "meta-ai"
-    key_env_var = "META_AI_TOKEN"
+class MetaAIChat(_mixin, Chat):
+    pass
 
-    def __str__(self):
-        return "Meta AI: {}".format(self.model_id)
+
+class MetaAIAsyncChat(_mixin, AsyncChat):
+    pass
 
 
 @llm.hookimpl

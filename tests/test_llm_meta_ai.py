@@ -44,6 +44,14 @@ def test_registers_models(mocked_models):
     assert str(model) == "Meta AI: meta-ai/muse-spark"
 
 
+def test_max_tokens_becomes_max_completion_tokens(mocked_models):
+    model = llm.get_model("meta-ai/muse-spark")
+    prompt = llm.models.Prompt("hello", model=model, options=model.Options(max_tokens=100))
+    kwargs = model.build_kwargs(prompt, stream=False)
+    assert "max_tokens" not in kwargs
+    assert kwargs["max_completion_tokens"] == 100
+
+
 def test_registers_async_models(mocked_models):
     model = llm.get_async_model("meta-ai/muse-spark")
     assert model.model_id == "meta-ai/muse-spark"
