@@ -8,12 +8,17 @@ authors = [{name = "Simon Willison"}]
 license = "Apache-2.0"
 classifiers = []
 dependencies = [
-
+    "llm>=0.26",
+    "httpx",
 ]
+
+[project.entry-points.llm]
+meta_ai = "llm_meta_ai"
 
 [dependency-groups]
 dev = [
-    "pytest"
+    "pytest",
+    "pytest-httpx"
 ]
 
 [build-system]
