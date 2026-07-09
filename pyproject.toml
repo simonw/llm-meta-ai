@@ -8,7 +8,7 @@ authors = [{name = "Simon Willison"}]
 license = "Apache-2.0"
 classifiers = []
 dependencies = [
-    "llm>=0.26",
+    "llm>=0.31.1",
     "httpx",
 ]
 
@@ -31,4 +31,3 @@ Homepage = "https://github.com/simonw/llm-meta-ai"
 Changelog = "https://github.com/simonw/llm-meta-ai/releases"
 Issues = "https://github.com/simonw/llm-meta-ai/issues"
 CI = "https://github.com/simonw/llm-meta-ai/actions"
-
