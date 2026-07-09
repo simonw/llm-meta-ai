@@ -9,8 +9,7 @@ from llm.cli import cli
 MODELS_RESPONSE = {
     "object": "list",
     "data": [
-        {"id": "blue_hornbill_vip", "object": "model", "created": 0, "owned_by": "meta"},
-        {"id": "muse-spark", "object": "model", "created": 0, "owned_by": "meta"},
+        {"id": "muse-spark-1.1", "object": "model", "created": 0, "owned_by": "meta"},
     ],
 }
 
@@ -34,10 +33,9 @@ def mocked_models(httpx_mock):
 
 def test_registers_models(mocked_models):
     model_ids = [model.model_id for model in llm.get_models()]
-    assert "meta-ai/blue_hornbill_vip" in model_ids
-    assert "meta-ai/muse-spark" in model_ids
-    model = llm.get_model("meta-ai/muse-spark")
-    assert model.model_name == "muse-spark"
+    assert "meta-ai/muse-spark-1.1" in model_ids
+    model = llm.get_model("meta-ai/muse-spark-1.1")
+    assert model.model_name == "muse-spark-1.1"
     assert model.api_base == "https://api.ai.meta.com/v1"
     assert model.supports_tools
     assert model.supports_schema
@@ -50,11 +48,11 @@ def test_registers_models(mocked_models):
         "image/x-icon",
         "application/pdf",
     }
-    assert str(model) == "Meta AI: meta-ai/muse-spark"
+    assert str(model) == "Meta AI: meta-ai/muse-spark-1.1"
 
 
 def test_max_tokens_becomes_max_completion_tokens(mocked_models):
-    model = llm.get_model("meta-ai/muse-spark")
+    model = llm.get_model("meta-ai/muse-spark-1.1")
     prompt = llm.models.Prompt("hello", model=model, options=model.Options(max_tokens=100))
     kwargs = model.build_kwargs(prompt, stream=False)
     assert "max_tokens" not in kwargs
@@ -62,7 +60,7 @@ def test_max_tokens_becomes_max_completion_tokens(mocked_models):
 
 
 def test_reasoning_effort_option(mocked_models):
-    model = llm.get_model("meta-ai/muse-spark")
+    model = llm.get_model("meta-ai/muse-spark-1.1")
     prompt = llm.models.Prompt(
         "hello", model=model, options=model.Options(reasoning_effort="low")
     )
@@ -71,15 +69,15 @@ def test_reasoning_effort_option(mocked_models):
 
 
 def test_registers_async_models(mocked_models):
-    model = llm.get_async_model("meta-ai/muse-spark")
-    assert model.model_id == "meta-ai/muse-spark"
+    model = llm.get_async_model("meta-ai/muse-spark-1.1")
+    assert model.model_id == "meta-ai/muse-spark-1.1"
 
 
 def test_models_command(mocked_models):
     runner = CliRunner()
     result = runner.invoke(cli, ["meta-ai", "models"])
     assert result.exit_code == 0
-    assert result.output == ("meta-ai/blue_hornbill_vip\nmeta-ai/muse-spark\n")
+    assert result.output == "meta-ai/muse-spark-1.1\n"
 
 
 def test_models_command_json(mocked_models):
