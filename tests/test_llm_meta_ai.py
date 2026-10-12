@@ -59,13 +59,16 @@ def test_max_tokens_becomes_max_completion_tokens(mocked_models):
     assert kwargs["max_completion_tokens"] == 100
 
 
-def test_reasoning_effort_option(mocked_models):
-    model = llm.get_model("meta-ai/muse-spark-1.1")
+@pytest.mark.parametrize("reasoning_effort", ["low", "max"])
+@pytest.mark.parametrize("async_", [False, True])
+def test_reasoning_effort_option(mocked_models, reasoning_effort, async_):
+    get_model = llm.get_async_model if async_ else llm.get_model
+    model = get_model("meta-ai/muse-spark-1.1")
     prompt = llm.models.Prompt(
-        "hello", model=model, options=model.Options(reasoning_effort="low")
+        "hello", model=model, options=model.Options(reasoning_effort=reasoning_effort)
     )
     kwargs = model.build_kwargs(prompt, stream=False)
-    assert kwargs["reasoning_effort"] == "low"
+    assert kwargs["reasoning_effort"] == reasoning_effort
 
 
 def test_registers_async_models(mocked_models):

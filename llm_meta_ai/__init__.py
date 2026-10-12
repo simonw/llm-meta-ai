@@ -19,6 +19,7 @@ class ReasoningEffortEnum(str, Enum):
     medium = "medium"
     high = "high"
     xhigh = "xhigh"
+    max = "max"
 
 
 def get_meta_ai_models(key, skip_cache=False):
@@ -42,7 +43,7 @@ class _mixin:
         reasoning_effort: Optional[ReasoningEffortEnum] = Field(
             description=(
                 'How much reasoning the model performs before answering: one of '
-                '"none", "minimal", "low", "medium", "high" or "xhigh". '
+                '"none", "minimal", "low", "medium", "high", "xhigh" or "max". '
                 'Set to "none" to disable reasoning.'
             ),
             default=None,
